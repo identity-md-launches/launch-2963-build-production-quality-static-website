@@ -1,0 +1,17 @@
+{
+  "name": "payagent-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PAY//AGENT: static concept site for a policy and observability layer for x402 AI agent payments.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "typecheck": "npx --yes -p typescript@5.9.3 tsc -p tsconfig.json",
+    "preview": "npx --yes http-server@14.1.1 dist -p 4173 -c-1"
+  }
+}

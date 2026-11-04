@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security model: PAY//AGENT spending controls for AI agents</title>
+  <meta name="description" content="How the PAY//AGENT concept limits agent payments: spending caps, rolling budgets, allowlists, quote expiry, replay protection, prompt-injection defenses, wallet isolation, revocation and escalation.">
+  <!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin. -->
+  <link rel="canonical" href="https://payagent.example/security.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="PAY//AGENT">
+  <meta property="og:title" content="PAY//AGENT security model">
+  <meta property="og:description" content="Spending caps, rolling budgets, allowlists, replay protection and prompt-injection risks for paying agents.">
+  <meta property="og:url" content="https://payagent.example/security.html">
+  <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0c0c0b">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./assets/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "PAY//AGENT security model",
+    "inLanguage": "en",
+    "isPartOf": { "@type": "WebSite", "name": "PAY//AGENT", "url": "https://payagent.example/" }
+  }
+  </script>
+  <script src="./assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="status-strip" role="note" aria-label="Project status">
+    <div class="wrap"><strong>Concept</strong><span>Unofficial x402 proposal. No live network, no token, not financial advice.</span></div>
+  </div>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./whitepaper.html">Whitepaper</a></li>
+          <li><a href="./docs.html">Docs</a></li>
+          <li><a href="./playground.html">Playground</a></li>
+          <li><a href="./security.html" aria-current="page">Security</a></li>
+          <li><a href="./about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap page-hero">
+      <h1>Security model</h1>
+      <p class="lede">An agent that can pay is a spender that reads untrusted text. These are the controls the concept proposes, and what each one cannot do. None of them have been audited.</p>
+    </div>
+
+    <div class="wrap doc">
+      <nav class="toc" aria-label="Security contents">
+        <h2>Contents</h2>
+        <ol>
+          <li><a href="#caps">Spending caps</a></li>
+          <li><a href="#budgets">Rolling budgets</a></li>
+          <li><a href="#allowlists">Network and asset allowlists</a></li>
+          <li><a href="#expiry">Quote expiry</a></li>
+          <li><a href="#replay">Replay protection</a></li>
+          <li><a href="#injection">Prompt-injection risks</a></li>
+          <li><a href="#isolation">Wallet isolation</a></li>
+          <li><a href="#revocation">Revocation</a></li>
+          <li><a href="#escalation">Escalation</a></li>
+          <li><a href="#disclosure">Responsible disclosure</a></li>
+        </ol>
+      </nav>
+
+      <article class="prose">
+        <section id="caps" aria-labelledby="caps-h">
+          <h2 id="caps-h">Spending caps</h2>
+          <p>A per-request cap rejects any single challenge above a fixed amount. It stops one surprise, such as a server that quotes a hundred times its usual price.</p>
+          <p><strong>Limit:</strong> many small payments each pass a cap. Pair it with a rolling budget.</p>
+        </section>
+
+        <section id="budgets" aria-labelledby="budgets-h">
+          <h2 id="budgets-h">Rolling budgets</h2>
+          <p>A rolling budget sums allowed payments over a sliding window, for example the last 24 hours, and denies a request that would push the total over the limit. It bounds the cost of loops, retries and slow drains.</p>
+          <p><strong>Limit:</strong> the sum comes from the local ledger. Allowed payments that fail to settle must be reconciled, or the budget becomes too strict; payments made outside the layer are not counted at all.</p>
+        </section>
+
+        <section id="allowlists" aria-labelledby="allowlists-h">
+          <h2 id="allowlists-h">Network and asset allowlists</h2>
+          <p>Challenges may offer several networks and assets. The policy accepts only those the operator lists, by network identifier and token contract. Anything else is dropped before evaluation, and a challenge with no acceptable option is denied.</p>
+          <p><strong>Limit:</strong> an allowlist trusts the listed contract. Verify contract addresses from the issuer's own documentation, never from a challenge.</p>
+        </section>
+
+        <section id="expiry" aria-labelledby="expiry-h">
+          <h2 id="expiry-h">Quote expiry</h2>
+          <p>The engine records when a challenge arrived and refuses to authorize it after a maximum age, and never later than the server's own <code>maxTimeoutSeconds</code>. A stale quote is refetched, not paid.</p>
+        </section>
+
+        <section id="replay" aria-labelledby="replay-h">
+          <h2 id="replay-h">Replay protection</h2>
+          <p>x402 payment schemes include their own replay protection, such as single-use authorizations. PAY//AGENT adds a client-side record of nonces and payment identifiers, so the agent never submits the same authorization twice and duplicated challenges are flagged.</p>
+        </section>
+
+        <section id="injection" aria-labelledby="injection-h">
+          <h2 id="injection-h">Prompt-injection risks</h2>
+          <p>Text from web pages, tool results and documents can contain instructions. An injected instruction might ask the agent to pay a new address, raise its own limit, or treat a payment as urgent.</p>
+          <ul>
+            <li>The agent cannot edit the policy, the payee list or the signer configuration. These live outside its tools.</li>
+            <li>Payees are pinned per origin. A changed payee is denied with <code>PA_PAYEE_NOT_ALLOWED</code>, whatever the agent was told.</li>
+            <li>Verdicts never depend on model output. The model can request; only the rules decide.</li>
+            <li>Denials are returned as structured errors, so a manipulated agent cannot quietly retry with different wording.</li>
+          </ul>
+          <div class="callout callout--warn"><p>No policy makes an agent trustworthy. It limits how much an untrustworthy decision can cost.</p></div>
+        </section>
+
+        <section id="isolation" aria-labelledby="isolation-h">
+          <h2 id="isolation-h">Wallet isolation</h2>
+          <ul>
+            <li>Use a dedicated spending wallet per agent, holding only a small working balance.</li>
+            <li>Keep its key in a separate process, hardware module or custodial service. Never put it in the agent's environment, prompt or logs.</li>
+            <li>Top up deliberately and on a schedule, not automatically from a treasury wallet.</li>
+          </ul>
+        </section>
+
+        <section id="revocation" aria-labelledby="revocation-h">
+          <h2 id="revocation-h">Revocation</h2>
+          <p>Setting <code>active</code> to <code>false</code> denies every later request with <code>PA_POLICY_INACTIVE</code>. Removing a payee, network or asset takes effect on the next evaluation. For a suspected key compromise, also move the remaining balance out of the spending wallet; revoking the policy does not stop someone who holds the key.</p>
+        </section>
+
+        <section id="escalation" aria-labelledby="escalation-h">
+          <h2 id="escalation-h">Escalation</h2>
+          <p>Payments at or above a threshold wait for a person. The approval request shows the origin, payee, amount, policy hash and the agent's stated reason. Unanswered requests expire and are denied. The approval channel is pluggable in the concept; none is implemented.</p>
+        </section>
+
+        <section id="disclosure" aria-labelledby="disclosure-h">
+          <h2 id="disclosure-h">Responsible disclosure</h2>
+          <p>If you find a flaw in this design or in the playground code, please report it privately before publishing.</p>
+          <dl>
+            <dt>Security contact</dt>
+            <dd><em>[Placeholder: security contact to be published by the maintainer.]</em> No contact address exists yet.</dd>
+            <dt>Encryption key</dt>
+            <dd><em>[Placeholder: PGP key fingerprint to be published.]</em></dd>
+            <dt>Response target</dt>
+            <dd><em>[Placeholder: acknowledgement and fix timelines to be set by the maintainer.]</em></dd>
+            <dt>Bounty</dt>
+            <dd>None. There is no bug bounty program.</dd>
+          </dl>
+          <p>Until a contact is published, do not post exploit details publicly. Flaws in the x402 protocol itself belong with the official project, listed in the <a href="./whitepaper.html#references">whitepaper references</a>.</p>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <p><strong>PAY//AGENT</strong></p>
+          <p>An independent concept and prototype for policy-controlled agent payments.</p>
+        </div>
+        <nav aria-label="Site">
+          <h2>Site</h2>
+          <ul>
+            <li><a href="./whitepaper.html">Whitepaper</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./playground.html">Playground</a></li>
+            <li><a href="./security.html">Security</a></li>
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="./terms.html">Terms</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./risk.html">Risk disclosure</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="footer-legal">PAY//AGENT is not affiliated with the x402 project or Coinbase. It is not a payment network, has no token, and nothing on this site is financial advice.</p>
+    </div>
+  </footer>
+</body>
+</html>

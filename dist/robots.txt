@@ -1,0 +1,6 @@
+# PAY//AGENT is a static concept site. All pages may be indexed.
+# PLACEHOLDER origin: replace https://payagent.example with the deployed origin.
+User-agent: *
+Allow: /
+
+Sitemap: https://payagent.example/sitemap.xml

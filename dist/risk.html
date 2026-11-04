@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Risk disclosure | PAY//AGENT</title>
+  <meta name="description" content="Risks of autonomous agent payments and of building on the PAY//AGENT concept. Not financial advice.">
+  <!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin. -->
+  <link rel="canonical" href="https://payagent.example/risk.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PAY//AGENT">
+  <meta property="og:title" content="PAY//AGENT risk disclosure">
+  <meta property="og:url" content="https://payagent.example/risk.html">
+  <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
+  <meta name="theme-color" content="#0c0c0b">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./assets/site.css">
+  <script src="./assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="status-strip" role="note" aria-label="Project status">
+    <div class="wrap"><strong>Concept</strong><span>Unofficial x402 proposal. No live network, no token, not financial advice.</span></div>
+  </div>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./whitepaper.html">Whitepaper</a></li>
+          <li><a href="./docs.html">Docs</a></li>
+          <li><a href="./playground.html">Playground</a></li>
+          <li><a href="./security.html">Security</a></li>
+          <li><a href="./about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap page-hero">
+      <h1>Risk disclosure</h1>
+      <p class="lede">Last updated 2026-11-04. Read this before building anything that lets software spend money.</p>
+    </div>
+    <div class="wrap legal">
+      <article class="prose">
+        <div class="callout callout--warn"><p>PAY//AGENT is a concept. It has not been implemented as production software, tested with real funds, or audited. Nothing on this site is financial advice.</p></div>
+        <h2>Autonomous spending</h2>
+        <p>An agent can make many payments quickly and without review. Bugs, misconfiguration and manipulated input can all cause unintended payments. Policies reduce this risk; they do not remove it.</p>
+        <h2>Digital assets</h2>
+        <p>x402 payments typically use stablecoins on public blockchains. Stablecoins can lose their peg, be frozen by their issuer, or become unavailable. On-chain payments are generally irreversible.</p>
+        <h2>Keys and custody</h2>
+        <p>Anyone holding a spending key can spend its balance. Loss or theft of a key can mean total loss of the funds it controls.</p>
+        <h2>Protocol and service risk</h2>
+        <p>The x402 specification, facilitators and paid services are outside this project's control. They may change, fail or behave maliciously. A paid service may not deliver what it charged for.</p>
+        <h2>Legal and regulatory</h2>
+        <p>Rules for automated payments, stablecoins and money transmission differ by jurisdiction and are changing. Get qualified advice for your situation.</p>
+        <h2>No token, no returns</h2>
+        <p>There is no PAY//AGENT token, sale, airdrop or yield. Anything claiming otherwise is not from this project.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <p><strong>PAY//AGENT</strong></p>
+          <p>An independent concept and prototype for policy-controlled agent payments.</p>
+        </div>
+        <nav aria-label="Site">
+          <h2>Site</h2>
+          <ul>
+            <li><a href="./whitepaper.html">Whitepaper</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./playground.html">Playground</a></li>
+            <li><a href="./security.html">Security</a></li>
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="./terms.html">Terms</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./risk.html" aria-current="page">Risk disclosure</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="footer-legal">PAY//AGENT is not affiliated with the x402 project or Coinbase. It is not a payment network, has no token, and nothing on this site is financial advice.</p>
+    </div>
+  </footer>
+</body>
+</html>

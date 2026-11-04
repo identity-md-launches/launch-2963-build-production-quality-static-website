@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docs: PAY//AGENT proposed client, policy and receipt formats</title>
+  <meta name="description" content="Proposed developer documentation for PAY//AGENT: quickstart, client and server flow, an example HTTP 402 challenge, policy configuration, receipts, errors and security guidance.">
+  <!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin. -->
+  <link rel="canonical" href="https://payagent.example/docs.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="PAY//AGENT">
+  <meta property="og:title" content="PAY//AGENT docs (proposed)">
+  <meta property="og:description" content="Proposed client flow, policy file, receipt format and error codes for a concept x402 policy layer.">
+  <meta property="og:url" content="https://payagent.example/docs.html">
+  <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0c0c0b">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./assets/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "PAY//AGENT documentation (proposed)",
+    "description": "Proposed client flow, policy configuration, receipt format and errors for a concept x402 policy layer.",
+    "dateModified": "2026-11-04",
+    "inLanguage": "en",
+    "isPartOf": { "@type": "WebSite", "name": "PAY//AGENT", "url": "https://payagent.example/" }
+  }
+  </script>
+  <script src="./assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="status-strip" role="note" aria-label="Project status">
+    <div class="wrap"><strong>Concept</strong><span>Unofficial x402 proposal. No live network, no token, not financial advice.</span></div>
+  </div>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./whitepaper.html">Whitepaper</a></li>
+          <li><a href="./docs.html" aria-current="page">Docs</a></li>
+          <li><a href="./playground.html">Playground</a></li>
+          <li><a href="./security.html">Security</a></li>
+          <li><a href="./about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap page-hero">
+      <h1>Docs</h1>
+      <p class="lede">Every API on this page is proposed. There is no published package, endpoint or SDK yet. Code samples show the intended shape so you can review it.</p>
+    </div>
+
+    <div class="wrap doc">
+      <nav class="toc" aria-label="Docs contents">
+        <h2>Contents</h2>
+        <ol>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#quickstart">Quickstart</a></li>
+          <li><a href="#flow">Client and server flow</a></li>
+          <li><a href="#challenge">Example 402 challenge</a></li>
+          <li><a href="#policy">Policy configuration</a></li>
+          <li><a href="#receipts">Receipt format</a></li>
+          <li><a href="#errors">Errors</a></li>
+          <li><a href="#security">Security guidance</a></li>
+        </ol>
+      </nav>
+
+      <article class="prose">
+        <section id="overview" aria-labelledby="overview-h">
+          <h2 id="overview-h">Overview</h2>
+          <p>PAY//AGENT is a proposed library that sits between an AI agent's HTTP client and its payment signer. When a server answers <code>402 Payment Required</code>, the library checks the request against a policy file, then either authorizes the payment, denies it with a reason code, or holds it for a person.</p>
+          <div class="callout"><p><strong>Status:</strong> proposed. The package name <code>@payagent/client</code> below is a placeholder and is not published. Do not install anything under that name.</p></div>
+        </section>
+
+        <section id="quickstart" aria-labelledby="quickstart-h">
+          <h2 id="quickstart-h">Quickstart</h2>
+          <p>The intended setup has three steps: write a policy, wrap the agent's fetch, and pass a signer that never leaves its own process.</p>
+          <figure class="term">
+            <div class="term-bar"><span class="term-title"><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>agent.ts</span></span><span class="badge">PROPOSED</span></div>
+<pre tabindex="0" aria-label="Proposed TypeScript quickstart"><code>import { loadPolicy, withPolicy } from "@payagent/client"; // proposed, not published
+
+const policy = await loadPolicy("./policy.json");
+
+// signer: your isolated x402-capable signer, e.g. built on the official x402 client libraries
+const fetchWithPolicy = withPolicy(fetch, { policy, signer, ledger: "./ledger.db" });
+
+const res = await fetchWithPolicy("https://api.example/v1/search?q=x402");
+if (res.ok) console.log(await res.json());</code></pre>
+          </figure>
+          <p>Until a release exists, the <a href="./playground.html">playground</a> runs the same rule order in your browser with example data.</p>
+        </section>
+
+        <section id="flow" aria-labelledby="flow-h">
+          <h2 id="flow-h">Proposed client and server flow</h2>
+          <h3>Client side (PAY//AGENT)</h3>
+          <ol>
+            <li>Send the request unchanged.</li>
+            <li>On a 402, parse the payment requirements from the response body.</li>
+            <li>Drop requirements outside the network and asset allowlists. Pick the cheapest remaining one.</li>
+            <li>Evaluate the policy and write the verdict to the ledger.</li>
+            <li>On allow, ask the signer for a payment payload and retry with the x402 payment header.</li>
+            <li>Record the response and any settlement header as a receipt.</li>
+          </ol>
+          <h3>Server side (unchanged x402)</h3>
+          <p>PAY//AGENT does not require server changes. A server that follows the x402 specification returns a 402 challenge, verifies the retried payment, settles it through its facilitator, and returns the resource. Use the official x402 server middleware for this side.</p>
+        </section>
+
+        <section id="challenge" aria-labelledby="challenge-h">
+          <h2 id="challenge-h">Example HTTP 402 challenge</h2>
+          <p>This follows the shape of the public x402 version 1 payment requirements. Field names can change between specification versions; check the official repository before relying on them.</p>
+          <figure class="term">
+            <div class="term-bar"><span class="term-title"><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>response</span></span><span class="badge">EXAMPLE</span></div>
+<pre tabindex="0" aria-label="Example 402 response"><code>HTTP/1.1 402 Payment Required
+Content-Type: application/json
+
+{
+  "x402Version": 1,
+  "error": "X-PAYMENT header is required",
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "base-sepolia",
+      "maxAmountRequired": "2000",
+      "resource": "https://api.example/v1/search",
+      "description": "One search query (EXAMPLE)",
+      "mimeType": "application/json",
+      "payTo": "&lt;payee address from the service&gt;",
+      "maxTimeoutSeconds": 60,
+      "asset": "&lt;token contract address&gt;"
+    }
+  ]
+}</code></pre>
+          </figure>
+          <p>Amounts are strings in the asset's base units. For a six-decimal stablecoin, <code>"2000"</code> means 0.002 units. Addresses are left as placeholders on purpose.</p>
+        </section>
+
+        <section id="policy" aria-labelledby="policy-h">
+          <h2 id="policy-h">Policy configuration</h2>
+          <p>A policy is one JSON file per agent. All amounts are decimal strings in whole units of the asset, converted to base units at load time.</p>
+          <figure class="term">
+            <div class="term-bar"><span class="term-title"><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>policy.json</span></span><span class="badge">PROPOSED</span></div>
+<pre tabindex="0" aria-label="Proposed policy file"><code>{
+  "version": "0.1",
+  "agent": "research-bot",
+  "active": true,
+  "networks": ["base-sepolia"],
+  "assets": [{ "network": "base-sepolia", "address": "&lt;token contract you choose&gt;", "decimals": 6 }],
+  "payees": {
+    "mode": "allowlist",
+    "entries": [{ "origin": "https://api.example", "payTo": "&lt;payee address&gt;" }]
+  },
+  "limits": {
+    "perRequest": "0.10",
+    "rolling": { "window": "24h", "max": "5.00" },
+    "escalateAtOrAbove": "1.00"
+  },
+  "quotes": { "maxAgeSeconds": 60 },
+  "replay": { "trackNonces": true, "retainFor": "7d" }
+}</code></pre>
+          </figure>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Key</th><th scope="col">Meaning</th></tr></thead>
+              <tbody>
+                <tr><th scope="row"><code>active</code></th><td>Set to <code>false</code> to revoke. Every request is denied with <code>PA_POLICY_INACTIVE</code>.</td></tr>
+                <tr><th scope="row"><code>networks</code></th><td>Allowed network identifiers, as they appear in challenges.</td></tr>
+                <tr><th scope="row"><code>assets</code></th><td>Allowed token contracts per network.</td></tr>
+                <tr><th scope="row"><code>payees</code></th><td><code>allowlist</code> pins payees per origin; <code>any</code> disables the check.</td></tr>
+                <tr><th scope="row"><code>limits</code></th><td>Per-request cap, rolling budget and escalation threshold.</td></tr>
+                <tr><th scope="row"><code>quotes</code></th><td>Maximum age of a challenge before it must be refetched.</td></tr>
+                <tr><th scope="row"><code>replay</code></th><td>Whether and how long to remember used nonces.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="receipts" aria-labelledby="receipts-h">
+          <h2 id="receipts-h">Receipt format</h2>
+          <p>One receipt per payment decision, including denials. Receipts are local records; they are not proof of settlement unless they include the server's settlement response.</p>
+          <figure class="term">
+            <div class="term-bar"><span class="term-title"><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>receipt.json</span></span><span class="badge">EXAMPLE</span></div>
+<pre tabindex="0" aria-label="Example receipt"><code>{
+  "id": "rcpt_example_0001",
+  "status": "SIMULATED",
+  "agent": "research-bot",
+  "policyHash": "sha256:&lt;hash of policy.json&gt;",
+  "request": { "method": "GET", "url": "https://api.example/v1/search" },
+  "challenge": { "scheme": "exact", "network": "base-sepolia", "amount": "2000", "payTo": "&lt;payee&gt;" },
+  "verdict": { "decision": "allow", "codes": [], "evaluatedAt": "2026-11-04T12:00:00Z" },
+  "result": { "httpStatus": 200, "settlement": null }
+}</code></pre>
+          </figure>
+        </section>
+
+        <section id="errors" aria-labelledby="errors-h">
+          <h2 id="errors-h">Errors</h2>
+          <p>Denials return a structured error to the agent, so it can explain the block instead of retrying. Codes are proposed.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Code</th><th scope="col">Cause</th><th scope="col">What to do</th></tr></thead>
+              <tbody>
+                <tr><th scope="row"><code>PA_POLICY_INACTIVE</code></th><td>Policy or agent revoked</td><td>Re-enable the policy if the revocation was a mistake</td></tr>
+                <tr><th scope="row"><code>PA_NETWORK_NOT_ALLOWED</code></th><td>Challenge uses an unlisted network</td><td>Add the network only if you monitor it</td></tr>
+                <tr><th scope="row"><code>PA_ASSET_NOT_ALLOWED</code></th><td>Challenge uses an unlisted asset</td><td>Check the token contract with the service</td></tr>
+                <tr><th scope="row"><code>PA_PAYEE_NOT_ALLOWED</code></th><td>Payee differs from the pinned entry</td><td>Treat as suspicious; confirm out of band</td></tr>
+                <tr><th scope="row"><code>PA_OVER_REQUEST_CAP</code></th><td>Amount above the per-request cap</td><td>Raise the cap or route to escalation</td></tr>
+                <tr><th scope="row"><code>PA_OVER_BUDGET</code></th><td>Rolling budget would be exceeded</td><td>Wait for the window or raise the budget</td></tr>
+                <tr><th scope="row"><code>PA_QUOTE_EXPIRED</code></th><td>Challenge older than the allowed age</td><td>Request again to get a fresh challenge</td></tr>
+                <tr><th scope="row"><code>PA_REPLAY_DETECTED</code></th><td>Nonce already used</td><td>Do not resend; investigate the source</td></tr>
+                <tr><th scope="row"><code>PA_ESCALATION_REQUIRED</code></th><td>Amount at or above the approval threshold</td><td>Approve or reject in your approval channel</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="security" aria-labelledby="security-h">
+          <h2 id="security-h">Security guidance</h2>
+          <ul>
+            <li>Keep the signing key out of the agent's process, prompt and tools.</li>
+            <li>Fund the spending wallet with only what you can lose, and top it up deliberately.</li>
+            <li>Start on a testnet. Move to mainnet only after reviewing receipts for a while.</li>
+            <li>Pin payees for every service you pay. Treat a changed payee as an incident.</li>
+            <li>Store the policy where the agent cannot write to it.</li>
+            <li>Read the full <a href="./security.html">security model</a> before connecting real funds to anything.</li>
+          </ul>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <p><strong>PAY//AGENT</strong></p>
+          <p>An independent concept and prototype for policy-controlled agent payments.</p>
+        </div>
+        <nav aria-label="Site">
+          <h2>Site</h2>
+          <ul>
+            <li><a href="./whitepaper.html">Whitepaper</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./playground.html">Playground</a></li>
+            <li><a href="./security.html">Security</a></li>
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="./terms.html">Terms</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./risk.html">Risk disclosure</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="footer-legal">PAY//AGENT is not affiliated with the x402 project or Coinbase. It is not a payment network, has no token, and nothing on this site is financial advice.</p>
+    </div>
+  </footer>
+</body>
+</html>

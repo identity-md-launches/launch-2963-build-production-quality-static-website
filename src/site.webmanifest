@@ -1,0 +1,13 @@
+{
+  "name": "PAY//AGENT",
+  "short_name": "PAY//AGENT",
+  "description": "An independent concept: the policy and observability layer for AI agent payments over x402.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c0c0b",
+  "theme_color": "#0c0c0b",
+  "icons": [
+    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

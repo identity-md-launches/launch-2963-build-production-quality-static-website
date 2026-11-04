@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin before publishing. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://payagent.example/index.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/whitepaper.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/docs.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/playground.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/security.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/about.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/terms.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/privacy.html</loc><lastmod>2026-11-04</lastmod></url>
+  <url><loc>https://payagent.example/risk.html</loc><lastmod>2026-11-04</lastmod></url>
+</urlset>

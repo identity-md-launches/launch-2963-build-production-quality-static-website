@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Whitepaper: PAY//AGENT policy layer for x402 agent payments</title>
+  <meta name="description" content="Draft whitepaper for PAY//AGENT, a concept for deterministic spending policy and observability around x402 payments made by AI agents.">
+  <!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin. -->
+  <link rel="canonical" href="https://payagent.example/whitepaper.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="PAY//AGENT">
+  <meta property="og:title" content="PAY//AGENT whitepaper (draft)">
+  <meta property="og:description" content="Architecture, policy engine, threat model and limits of a concept policy layer for x402 agent payments.">
+  <meta property="og:url" content="https://payagent.example/whitepaper.html">
+  <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0c0c0b">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./assets/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "PAY//AGENT whitepaper (draft 0.1)",
+    "description": "A concept for deterministic spending policy and observability around x402 payments made by AI agents.",
+    "dateModified": "2026-11-04",
+    "inLanguage": "en",
+    "isPartOf": { "@type": "WebSite", "name": "PAY//AGENT", "url": "https://payagent.example/" }
+  }
+  </script>
+  <script src="./assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="status-strip" role="note" aria-label="Project status">
+    <div class="wrap"><strong>Concept</strong><span>Unofficial x402 proposal. No live network, no token, not financial advice.</span></div>
+  </div>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./whitepaper.html" aria-current="page">Whitepaper</a></li>
+          <li><a href="./docs.html">Docs</a></li>
+          <li><a href="./playground.html">Playground</a></li>
+          <li><a href="./security.html">Security</a></li>
+          <li><a href="./about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap page-hero">
+      <h1>Whitepaper</h1>
+      <p class="lede">Draft 0.1. A deterministic policy and observability layer for x402 payments made by autonomous agents. This is a design proposal, not a specification of a running system.</p>
+    </div>
+
+    <div class="wrap doc">
+      <nav class="toc" aria-label="Whitepaper contents">
+        <h2>Contents</h2>
+        <ol>
+          <li><a href="#abstract">1. Abstract</a></li>
+          <li><a href="#architecture">2. System architecture</a></li>
+          <li><a href="#lifecycle">3. Payment lifecycle</a></li>
+          <li><a href="#policy-engine">4. Deterministic policy engine</a></li>
+          <li><a href="#discovery">5. Service discovery</a></li>
+          <li><a href="#threats">6. Threat model</a></li>
+          <li><a href="#economics">7. Economic model</a></li>
+          <li><a href="#reference">8. Reference implementation</a></li>
+          <li><a href="#roadmap">9. Roadmap</a></li>
+          <li><a href="#limitations">10. Limitations</a></li>
+          <li><a href="#revisions">11. Revision history</a></li>
+          <li><a href="#glossary">12. Glossary</a></li>
+          <li><a href="#references">13. References</a></li>
+        </ol>
+      </nav>
+
+      <article class="prose">
+        <section id="abstract" aria-labelledby="abstract-h">
+          <h2 id="abstract-h">1. Abstract</h2>
+          <p>x402 is an open, HTTP-native payment pattern: a server answers a request with status <code>402 Payment Required</code> and a description of acceptable payment, and the client retries with a payment attached. This makes paid APIs reachable by software agents without accounts or API keys.</p>
+          <p>It also hands a spending decision to a program that reads untrusted input. PAY//AGENT proposes a separate layer that evaluates each payment request against an operator-written policy before any authorization exists, and records every decision as a receipt. The policy is deterministic: given the same challenge, policy and state, it always returns the same verdict, and no language model is consulted.</p>
+          <div class="callout"><p>PAY//AGENT is an independent concept. It is not the official x402 protocol, not affiliated with its authors, not a payment network, and has no token.</p></div>
+        </section>
+
+        <section id="architecture" aria-labelledby="architecture-h">
+          <h2 id="architecture-h">2. System architecture</h2>
+          <p>The proposal has four parts, all running on infrastructure the operator controls.</p>
+          <dl>
+            <dt>Interceptor</dt>
+            <dd>Wraps the agent's HTTP client. It detects a 402 response, parses the payment requirements, and hands them to the policy engine. The agent never sees signing material.</dd>
+            <dt>Policy engine</dt>
+            <dd>A pure function from (challenge, policy, ledger state, clock) to a verdict: allow, deny with a reason code, or escalate.</dd>
+            <dt>Signer boundary</dt>
+            <dd>A separate process or service holding a spending key with its own on-chain or custodial limits. It signs only requests carrying an allow verdict from the engine.</dd>
+            <dt>Ledger and receipts</dt>
+            <dd>An append-only local store of challenges, verdicts, authorizations and results. It feeds the rolling budget and the observability views.</dd>
+          </dl>
+          <figure class="term">
+            <div class="term-bar"><span class="term-title"><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>architecture</span></span><span class="badge">PROPOSED</span></div>
+<pre tabindex="0" aria-label="Architecture diagram as text">agent ──http──&gt; interceptor ──402?──&gt; policy engine
+                    │                      │
+                    │               allow / deny / escalate
+                    │                      │
+                    │&lt;──authorization── signer boundary
+                    │                      │
+                    └──retry──&gt; paid API   └──&gt; ledger + receipts</pre>
+          </figure>
+        </section>
+
+        <section id="lifecycle" aria-labelledby="lifecycle-h">
+          <h2 id="lifecycle-h">3. Payment lifecycle</h2>
+          <ol>
+            <li><strong>Request.</strong> The agent sends an ordinary HTTP request.</li>
+            <li><strong>Challenge.</strong> The server returns 402 with a list of accepted payment requirements: scheme, network, asset, maximum amount, payee, resource and timeout.</li>
+            <li><strong>Selection.</strong> The interceptor discards requirements that the policy can never accept, such as networks outside the allowlist, and picks the cheapest remaining option.</li>
+            <li><strong>Policy check.</strong> The engine evaluates the selected requirement. The verdict and its inputs are written to the ledger before anything else happens.</li>
+            <li><strong>Authorization.</strong> On allow, the signer produces a payment payload. On escalate, the request waits for a human decision or times out. On deny, the agent gets a structured error.</li>
+            <li><strong>Retry.</strong> The client repeats the request with the payment header defined by the x402 specification.</li>
+            <li><strong>Result.</strong> The server verifies and settles, usually through a facilitator, and returns the resource and a settlement response. The ledger records the outcome and links it to the verdict.</li>
+          </ol>
+        </section>
+
+        <section id="policy-engine" aria-labelledby="policy-h">
+          <h2 id="policy-h">4. Deterministic policy engine</h2>
+          <p>Rules are evaluated in a fixed order. All rules run, so a denial lists every failed rule, not only the first. The proposed order is:</p>
+          <ol>
+            <li>Agent and policy are active (revocation).</li>
+            <li>Network is on the allowlist.</li>
+            <li>Asset is on the allowlist.</li>
+            <li>Payee is on the allowlist, when one is configured.</li>
+            <li>Amount is at or below the per-request cap.</li>
+            <li>Amount plus spend inside the rolling window is at or below the budget.</li>
+            <li>Quote age is within the maximum and the server's own timeout.</li>
+            <li>Nonce or payment identifier has not been seen.</li>
+            <li>Amount is below the escalation threshold, otherwise escalate.</li>
+          </ol>
+          <p>Amounts are compared as integers in the asset's base units. Time comes from the engine's clock, never from the challenge. The engine has no network access and no randomness, which makes it testable with fixed vectors and safe to run in an audit replay.</p>
+          <p>Policy files are versioned. Every receipt stores the policy hash, so a past decision can be reproduced exactly.</p>
+        </section>
+
+        <section id="discovery" aria-labelledby="discovery-h">
+          <h2 id="discovery-h">5. Service discovery</h2>
+          <p>Agents need to find paid endpoints and their terms before calling them. The concept treats discovery as untrusted input: a catalog entry can suggest a service, but only the policy decides whether it may be paid.</p>
+          <ul>
+            <li>Operators pin services by origin and expected payee in the policy, not by catalog listing.</li>
+            <li>Advertised prices are informational. The amount in the live 402 challenge is what the engine checks.</li>
+            <li>A service whose challenge differs from its pinned entry is denied and flagged for review.</li>
+          </ul>
+          <p>Discovery mechanisms in the x402 ecosystem are still evolving. This draft does not depend on any particular catalog.</p>
+        </section>
+
+        <section id="threats" aria-labelledby="threats-h">
+          <h2 id="threats-h">6. Threat model</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Threat</th><th scope="col">Example</th><th scope="col">Proposed mitigation</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Prompt injection</th><td>A fetched page tells the agent to pay a different address</td><td>Payee allowlist; agent cannot edit policy or reach the signer</td></tr>
+                <tr><th scope="row">Runaway loop</th><td>A retry bug repeats a paid call</td><td>Rolling budget; per-request cap</td></tr>
+                <tr><th scope="row">Malicious server</th><td>Server inflates price or swaps network</td><td>Cap; network and asset allowlists; pinned payee</td></tr>
+                <tr><th scope="row">Replay</th><td>A captured payment is reused</td><td>Nonce tracking; quote expiry; scheme-level protections</td></tr>
+                <tr><th scope="row">Key compromise</th><td>The agent host is breached</td><td>Signer isolation; low-balance spending wallet; revocation</td></tr>
+                <tr><th scope="row">Policy tampering</th><td>Policy file edited to raise limits</td><td>Signed policy files; hash in every receipt; change alerts</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Out of scope: compromise of the operator's own machine and signer together, flaws in the underlying chain or facilitator, and whether a paid service delivers what it promised.</p>
+        </section>
+
+        <section id="economics" aria-labelledby="economics-h">
+          <h2 id="economics-h">7. Economic model</h2>
+          <p>PAY//AGENT has no token, no fee and no revenue mechanism. It moves no funds and takes no cut. In the concept, payments go directly from the operator's spending wallet to the service's payee using the assets and networks that x402 supports.</p>
+          <p>The economic question the layer addresses is cost control: bounding the worst case of an autonomous spender. The operator chooses caps from their own tolerance for loss. If a future version were offered as a hosted service, its pricing would be published separately; no such service exists.</p>
+        </section>
+
+        <section id="reference" aria-labelledby="reference-h">
+          <h2 id="reference-h">8. Reference implementation</h2>
+          <p>Status: not released. The only working code today is the in-browser simulation on the <a href="./playground.html">playground</a>, which implements the rule order above against example data. It does not sign, connect to wallets or send network requests.</p>
+          <p>A reference package would include the policy engine as a dependency-free library, an HTTP client interceptor, a signer adapter interface, and a test-vector suite. These are listed in the roadmap and do not exist yet.</p>
+        </section>
+
+        <section id="roadmap" aria-labelledby="roadmap-h">
+          <h2 id="roadmap-h">9. Roadmap</h2>
+          <p>Intentions, not commitments. No dates are promised.</p>
+          <ol>
+            <li>Publish the policy schema and test vectors for comment.</li>
+            <li>Release the policy engine as an open-source library.</li>
+            <li>Build a client interceptor against the official x402 client libraries, on testnets only.</li>
+            <li>Add escalation through a pluggable approval channel.</li>
+            <li>Commission an independent security review before any mainnet guidance.</li>
+          </ol>
+        </section>
+
+        <section id="limitations" aria-labelledby="limitations-h">
+          <h2 id="limitations-h">10. Limitations</h2>
+          <ul>
+            <li>A policy only limits payments that pass through it. An agent with another path to funds is not constrained.</li>
+            <li>Rules check the payment, not the value of what was bought. A within-budget payment to an allowlisted payee can still be wasteful.</li>
+            <li>Rolling budgets depend on an accurate local ledger. Settlement that fails after an allow verdict must be reconciled.</li>
+            <li>The x402 specification may change. Field names in this draft follow public documentation and may need updates.</li>
+            <li>Nothing here has been audited or tested in production.</li>
+          </ul>
+        </section>
+
+        <section id="revisions" aria-labelledby="revisions-h">
+          <h2 id="revisions-h">11. Revision history</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Version</th><th scope="col">Date</th><th scope="col">Change</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Draft 0.1</th><td>2026-11-04</td><td>First public draft of the concept, with simulation-only playground.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="glossary" aria-labelledby="glossary-h">
+          <h2 id="glossary-h">12. Glossary</h2>
+          <dl>
+            <dt>402 challenge</dt><dd>An HTTP response with status 402 listing the payment a server will accept.</dd>
+            <dt>Facilitator</dt><dd>In x402, a service that verifies and settles payments on behalf of a resource server.</dd>
+            <dt>Policy</dt><dd>An operator-written set of limits that the engine checks before any payment is authorized.</dd>
+            <dt>Verdict</dt><dd>The engine's output: allow, deny with reason codes, or escalate.</dd>
+            <dt>Receipt</dt><dd>A structured record tying a challenge, verdict and result together.</dd>
+            <dt>Rolling budget</dt><dd>A spending limit over a sliding time window, such as the last 24 hours.</dd>
+            <dt>Escalation</dt><dd>Holding a payment for a human decision because it exceeds a threshold.</dd>
+            <dt>Signer boundary</dt><dd>The separation between the agent process and the key that can authorize payments.</dd>
+          </dl>
+        </section>
+
+        <section id="references" aria-labelledby="references-h">
+          <h2 id="references-h">13. References</h2>
+          <p>Official x402 materials. Consult them for the current protocol; this draft does not replace them.</p>
+          <ul>
+            <li><a href="https://www.x402.org/" rel="noopener">x402.org</a>, the project site.</li>
+            <li><a href="https://github.com/coinbase/x402" rel="noopener">github.com/coinbase/x402</a>, specification and reference libraries.</li>
+            <li><a href="https://docs.cdp.coinbase.com/x402/welcome" rel="noopener">Coinbase Developer Platform x402 documentation</a>.</li>
+            <li><a href="https://www.rfc-editor.org/rfc/rfc9110#name-402-payment-required" rel="noopener">RFC 9110, section 15.5.3</a>, the HTTP 402 status code.</li>
+          </ul>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <p><strong>PAY//AGENT</strong></p>
+          <p>An independent concept and prototype for policy-controlled agent payments.</p>
+        </div>
+        <nav aria-label="Site">
+          <h2>Site</h2>
+          <ul>
+            <li><a href="./whitepaper.html">Whitepaper</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./playground.html">Playground</a></li>
+            <li><a href="./security.html">Security</a></li>
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="./terms.html">Terms</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./risk.html">Risk disclosure</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="footer-legal">PAY//AGENT is not affiliated with the x402 project or Coinbase. It is not a payment network, has no token, and nothing on this site is financial advice.</p>
+    </div>
+  </footer>
+</body>
+</html>

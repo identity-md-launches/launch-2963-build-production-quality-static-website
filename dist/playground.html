@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Playground: simulate a policy-checked x402 payment | PAY//AGENT</title>
+  <meta name="description" content="An educational, in-browser simulation of request, 402 challenge, policy check, authorization, retry and result. No wallet, no signature, no funds.">
+  <!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin. -->
+  <link rel="canonical" href="https://payagent.example/playground.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PAY//AGENT">
+  <meta property="og:title" content="PAY//AGENT playground (simulation)">
+  <meta property="og:description" content="Step through a simulated x402 payment and watch deterministic policy rules allow, deny or escalate it.">
+  <meta property="og:url" content="https://payagent.example/playground.html">
+  <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0c0c0b">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./assets/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "PAY//AGENT playground",
+    "description": "Educational simulation of a policy-checked x402 payment. Nothing is signed or sent.",
+    "inLanguage": "en",
+    "isPartOf": { "@type": "WebSite", "name": "PAY//AGENT", "url": "https://payagent.example/" }
+  }
+  </script>
+  <script src="./assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="status-strip" role="note" aria-label="Project status">
+    <div class="wrap"><strong>Concept</strong><span>Unofficial x402 proposal. No live network, no token, not financial advice.</span></div>
+  </div>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./whitepaper.html">Whitepaper</a></li>
+          <li><a href="./docs.html">Docs</a></li>
+          <li><a href="./playground.html" aria-current="page">Playground</a></li>
+          <li><a href="./security.html">Security</a></li>
+          <li><a href="./about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap page-hero">
+      <h1>Playground</h1>
+      <p class="lede">Simulate one agent payment: request, 402 challenge, policy check, authorization, retry, result. Everything runs in this page. No wallet, no signature, no money moves.</p>
+    </div>
+
+    <noscript>
+      <div class="wrap"><p class="callout">The simulation needs JavaScript. The <a href="./docs.html#errors">docs</a> describe the same rules and error codes.</p></div>
+    </noscript>
+
+    <div class="wrap pg">
+      <form id="pg-form" class="panel stack-lg" aria-labelledby="pg-form-h" novalidate>
+        <h2 id="pg-form-h">Scenario and policy</h2>
+
+        <fieldset>
+          <legend>Start from a scenario</legend>
+          <div class="presets">
+            <button class="chip" type="button" data-preset="within" aria-pressed="true">Within policy</button>
+            <button class="chip" type="button" data-preset="cap" aria-pressed="false">Over the cap</button>
+            <button class="chip" type="button" data-preset="budget" aria-pressed="false">Budget spent</button>
+            <button class="chip" type="button" data-preset="expired" aria-pressed="false">Stale quote</button>
+            <button class="chip" type="button" data-preset="network" aria-pressed="false">Wrong network</button>
+            <button class="chip" type="button" data-preset="injection" aria-pressed="false">Injected payee</button>
+            <button class="chip" type="button" data-preset="replay" aria-pressed="false">Replay</button>
+            <button class="chip" type="button" data-preset="escalate" aria-pressed="false">Needs approval</button>
+          </div>
+        </fieldset>
+
+        <div class="btn-row">
+          <button class="btn btn--primary" type="button" id="pg-run">Run simulation</button>
+          <button class="btn" type="button" id="pg-step">Step</button>
+          <button class="btn" type="button" id="pg-reset">Reset</button>
+        </div>
+
+        <fieldset>
+          <legend>Request</legend>
+          <div class="field">
+            <label for="f-service">EXAMPLE service</label>
+            <select id="f-service" name="service">
+              <option value="search" selected>Web search API, 0.002 per call</option>
+              <option value="inference">Image model inference, 0.04 per call</option>
+              <option value="dataset">Dataset slice export, 1.50 per export</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Policy</legend>
+          <div class="field">
+            <label for="f-cap">Per-request cap</label>
+            <input id="f-cap" name="cap" type="number" inputmode="decimal" min="0" step="0.001" value="0.1" aria-describedby="h-units">
+          </div>
+          <div class="field">
+            <label for="f-budget">Rolling 24h budget</label>
+            <input id="f-budget" name="budget" type="number" inputmode="decimal" min="0" step="0.01" value="5">
+          </div>
+          <div class="field">
+            <label for="f-spent">Already spent in window</label>
+            <input id="f-spent" name="spent" type="number" inputmode="decimal" min="0" step="0.001" value="1.2" aria-describedby="h-spent">
+            <span class="hint" id="h-spent">Grows after each allowed run.</span>
+          </div>
+          <div class="field">
+            <label for="f-escalate">Ask a human at or above</label>
+            <input id="f-escalate" name="escalateAt" type="number" inputmode="decimal" min="0" step="0.01" value="1">
+          </div>
+          <div class="field">
+            <label for="f-maxage">Maximum quote age (seconds)</label>
+            <input id="f-maxage" name="maxAge" type="number" inputmode="numeric" min="0" step="1" value="60">
+          </div>
+          <p class="hint" id="h-units">Amounts are in an EXAMPLE stablecoin unit.</p>
+          <fieldset class="field">
+            <legend>Allowed networks</legend>
+            <div class="check"><input id="n-84532" type="checkbox" name="networks" value="eip155:84532" checked><label for="n-84532">Base Sepolia testnet</label></div>
+            <div class="check"><input id="n-8453" type="checkbox" name="networks" value="eip155:8453"><label for="n-8453">Base</label></div>
+            <div class="check"><input id="n-1" type="checkbox" name="networks" value="eip155:1"><label for="n-1">Ethereum</label></div>
+          </fieldset>
+          <div class="check"><input id="f-payees" type="checkbox" name="payeeAllowlist" checked><label for="f-payees">Only pay listed payees</label></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Server challenge</legend>
+          <div class="field">
+            <label for="f-qnet">Network the server asks for</label>
+            <select id="f-qnet" name="quotedNetwork">
+              <option value="as-listed" selected>As listed for the service (Base Sepolia)</option>
+              <option value="eip155:8453">Base</option>
+              <option value="eip155:1">Ethereum</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-qage">Quote age when checked (seconds)</label>
+            <input id="f-qage" name="quoteAge" type="number" inputmode="numeric" min="0" step="1" value="4">
+          </div>
+          <div class="check"><input id="f-inject" type="checkbox" name="injectedPayee"><label for="f-inject">Injected text swapped the payee</label></div>
+          <div class="check"><input id="f-replay" type="checkbox" name="replay"><label for="f-replay">Reuse the last payment nonce</label></div>
+        </fieldset>
+      </form>
+
+      <div class="stack-lg">
+        <section aria-labelledby="pipe-h">
+          <h2 id="pipe-h" class="visually-hidden">Pipeline stages</h2>
+          <ol class="pipeline">
+            <li class="stage" data-stage="request" data-state="idle"><span class="stage-name">Request</span><span class="stage-state">waiting</span></li>
+            <li class="stage" data-stage="challenge" data-state="idle"><span class="stage-name">402 challenge</span><span class="stage-state">waiting</span></li>
+            <li class="stage" data-stage="policy" data-state="idle"><span class="stage-name">Policy check</span><span class="stage-state">waiting</span></li>
+            <li class="stage" data-stage="authorize" data-state="idle"><span class="stage-name">Authorization</span><span class="stage-state">waiting</span></li>
+            <li class="stage" data-stage="retry" data-state="idle"><span class="stage-name">Retry</span><span class="stage-state">waiting</span></li>
+            <li class="stage" data-stage="result" data-state="idle"><span class="stage-name">Result</span><span class="stage-state">waiting</span></li>
+          </ol>
+        </section>
+
+        <div id="pg-outcome" class="outcome" role="status" aria-live="polite" data-result="">
+          <h3>Ready</h3>
+          <p>Pick a scenario or edit the policy, then run the simulation.</p>
+        </div>
+
+        <section aria-labelledby="checks-h">
+          <h2 id="checks-h" class="panel-title">Policy checks</h2>
+          <ul id="pg-checks" class="checks"></ul>
+        </section>
+
+        <figure class="term">
+          <div class="term-bar"><span class="term-title"><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>simulation log</span></span><span class="badge">SIMULATED</span></div>
+<pre id="pg-log" class="term-log" tabindex="0" aria-label="Simulation log"># SIMULATED. Choose a scenario, then run it.
+</pre>
+        </figure>
+
+        <p class="small dim">This simulation implements the rule order from the <a href="./whitepaper.html#policy-engine">whitepaper</a>. Services, prices and payees are fictional. A real payment would require a wallet, which this site never asks for.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <p><strong>PAY//AGENT</strong></p>
+          <p>An independent concept and prototype for policy-controlled agent payments.</p>
+        </div>
+        <nav aria-label="Site">
+          <h2>Site</h2>
+          <ul>
+            <li><a href="./whitepaper.html">Whitepaper</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./playground.html">Playground</a></li>
+            <li><a href="./security.html">Security</a></li>
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="./terms.html">Terms</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./risk.html">Risk disclosure</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="footer-legal">PAY//AGENT is not affiliated with the x402 project or Coinbase. It is not a payment network, has no token, and nothing on this site is financial advice.</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About PAY//AGENT: concept status, scope and license</title>
+  <meta name="description" content="What PAY//AGENT is and is not: an independent concept for x402 agent payment policy, with its scope, license and placeholder contacts.">
+  <!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin. -->
+  <link rel="canonical" href="https://payagent.example/about.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PAY//AGENT">
+  <meta property="og:title" content="About PAY//AGENT">
+  <meta property="og:description" content="Concept status, scope and license of PAY//AGENT.">
+  <meta property="og:url" content="https://payagent.example/about.html">
+  <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0c0c0b">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./assets/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About PAY//AGENT",
+    "inLanguage": "en",
+    "isPartOf": { "@type": "WebSite", "name": "PAY//AGENT", "url": "https://payagent.example/" }
+  }
+  </script>
+  <script src="./assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="status-strip" role="note" aria-label="Project status">
+    <div class="wrap"><strong>Concept</strong><span>Unofficial x402 proposal. No live network, no token, not financial advice.</span></div>
+  </div>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./whitepaper.html">Whitepaper</a></li>
+          <li><a href="./docs.html">Docs</a></li>
+          <li><a href="./playground.html">Playground</a></li>
+          <li><a href="./security.html">Security</a></li>
+          <li><a href="./about.html" aria-current="page">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap page-hero">
+      <h1>About</h1>
+      <p class="lede">PAY//AGENT is a design concept with a simulation. It is published to invite review of one idea: agent payments need rules that the agent cannot argue with.</p>
+    </div>
+
+    <div class="wrap doc">
+      <nav class="toc" aria-label="About contents">
+        <h2>Contents</h2>
+        <ol>
+          <li><a href="#status">Concept status</a></li>
+          <li><a href="#scope">Scope</a></li>
+          <li><a href="#license">License</a></li>
+          <li><a href="#maintainer">Maintainer</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ol>
+      </nav>
+
+      <article class="prose">
+        <section id="status" aria-labelledby="status-h">
+          <h2 id="status-h">Concept status</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Item</th><th scope="col">Status</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Whitepaper</th><td>Draft 0.1, open for comment</td></tr>
+                <tr><th scope="row">Policy schema and error codes</th><td>Proposed</td></tr>
+                <tr><th scope="row">Playground</th><td>Working, simulation only</td></tr>
+                <tr><th scope="row">Client library</th><td>Not built</td></tr>
+                <tr><th scope="row">Hosted service or network</th><td>None</td></tr>
+                <tr><th scope="row">Token</th><td>None, and none planned</td></tr>
+                <tr><th scope="row">Security audit</th><td>None</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="scope" aria-labelledby="scope-h">
+          <h2 id="scope-h">Scope</h2>
+          <p>In scope: the client-side policy layer, its configuration format, receipts, error codes and threat model.</p>
+          <p>Out of scope: the x402 protocol itself, facilitators, settlement, wallets, custody, and any payment processing. PAY//AGENT is not the official x402 protocol and is not affiliated with the x402 project, Coinbase or any company named on this site. It has no partners, customers or integrations.</p>
+        </section>
+
+        <section id="license" aria-labelledby="license-h">
+          <h2 id="license-h">License</h2>
+          <p>The site source and playground code are offered under the MIT License. The whitepaper and documentation text are offered under Creative Commons Attribution 4.0 (CC BY 4.0). Both are stated in the repository's <code>LICENSE</code> file. Third-party names belong to their owners.</p>
+        </section>
+
+        <section id="maintainer" aria-labelledby="maintainer-h">
+          <h2 id="maintainer-h">Maintainer</h2>
+          <p><em>[Placeholder: maintainer name or organization to be added.]</em> No team is listed because none has been announced.</p>
+        </section>
+
+        <section id="contact" aria-labelledby="contact-h">
+          <h2 id="contact-h">Contact</h2>
+          <p><em>[Placeholder: general contact address to be added.]</em> For security reports, see <a href="./security.html#disclosure">responsible disclosure</a>.</p>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <p><strong>PAY//AGENT</strong></p>
+          <p>An independent concept and prototype for policy-controlled agent payments.</p>
+        </div>
+        <nav aria-label="Site">
+          <h2>Site</h2>
+          <ul>
+            <li><a href="./whitepaper.html">Whitepaper</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./playground.html">Playground</a></li>
+            <li><a href="./security.html">Security</a></li>
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="./terms.html">Terms</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./risk.html">Risk disclosure</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="footer-legal">PAY//AGENT is not affiliated with the x402 project or Coinbase. It is not a payment network, has no token, and nothing on this site is financial advice.</p>
+    </div>
+  </footer>
+</body>
+</html>

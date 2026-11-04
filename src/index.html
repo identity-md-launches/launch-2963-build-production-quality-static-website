@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PAY//AGENT: policy and observability for AI agent payments</title>
+  <meta name="description" content="PAY//AGENT is an independent concept for the policy and observability layer for AI agent payments over x402. Not the official protocol, no live network, no token.">
+  <!-- PLACEHOLDER origin: replace https://payagent.example with the deployed origin. -->
+  <link rel="canonical" href="https://payagent.example/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PAY//AGENT">
+  <meta property="og:title" content="PAY//AGENT: policy and observability for AI agent payments">
+  <meta property="og:description" content="An independent concept for policy-controlled x402 payments by autonomous AI agents.">
+  <meta property="og:url" content="https://payagent.example/index.html">
+  <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
+  <meta property="og:image:alt" content="PAY//AGENT wordmark on black with the line: the policy and observability layer for AI agent payments.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0c0c0b">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./assets/site.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PAY//AGENT",
+    "url": "https://payagent.example/",
+    "description": "An independent concept for the policy and observability layer for AI agent payments over x402. Not the official x402 protocol, not a payment network, no token.",
+    "inLanguage": "en"
+  }
+  </script>
+  <script src="./assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="status-strip" role="note" aria-label="Project status">
+    <div class="wrap"><strong>Concept</strong><span>Unofficial x402 proposal. No live network, no token, not financial advice.</span></div>
+  </div>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <ul>
+          <li><a href="./index.html" aria-current="page">Home</a></li>
+          <li><a href="./whitepaper.html">Whitepaper</a></li>
+          <li><a href="./docs.html">Docs</a></li>
+          <li><a href="./playground.html">Playground</a></li>
+          <li><a href="./security.html">Security</a></li>
+          <li><a href="./about.html">About</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-grid">
+        <div>
+          <h1 id="hero-title">Guardrails for agents <span class="accent">that pay.</span></h1>
+          <p class="lede">The policy and observability layer for AI agent payments. Caps, allowlists and receipts, checked before an agent answers an x402 payment request.</p>
+          <div class="btn-row">
+            <a class="btn btn--primary" href="./playground.html">Try the playground <span class="arrow" aria-hidden="true">-&gt;</span></a>
+            <a class="btn" href="./docs.html">Read the docs</a>
+          </div>
+        </div>
+
+        <figure class="term" aria-labelledby="term-caption">
+          <div class="term-bar">
+            <span class="term-title"><span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="term-caption">agent session</span></span>
+            <span class="badge">SIMULATED</span>
+          </div>
+<pre id="home-term" tabindex="0" aria-label="Simulated terminal transcript of one policy-checked x402 payment"><span class="line t-dim"># SIMULATED transcript. No wallet, no funds, no real service.</span>
+<span class="line">$ agent run "summarize today's filings"</span>
+<span class="line">-&gt; GET https://api.example/v1/filings</span>
+<span class="line t-warn">&lt;- 402 Payment Required</span>
+<span class="line">   amount 0.010 USDC  network eip155:84532</span>
+<span class="line">   payTo payee:example-filings  ttl 60s</span>
+<span class="line t-dim">payagent: evaluating policy "research-bot"</span>
+<span class="line t-ok">   network allowlist    pass</span>
+<span class="line t-ok">   per-request cap      pass  0.010 &lt;= 0.100</span>
+<span class="line t-ok">   rolling 24h budget   pass  1.21 / 5.00</span>
+<span class="line t-ok">   quote expiry         pass  4s / 60s</span>
+<span class="line t-ok">   replay check         pass  nonce unused</span>
+<span class="line">-&gt; retry with payment header (SIMULATED)</span>
+<span class="line t-ok">&lt;- 200 OK  receipt rcpt_example_0001</span>
+<span class="line">$ <span class="cursor" aria-hidden="true"></span></span></pre>
+          <figcaption class="term-foot">
+            <span>Illustrative only. Values are EXAMPLE data.</span>
+            <button class="btn" type="button" data-replay="home-term">Replay</button>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="problem-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="problem-title">Agents can pay. Few can be told how much.</h2>
+          <p>x402 lets an HTTP service answer with <code>402 Payment Required</code> and lets a client pay per request. That is useful for agents, and it moves a spending decision into a loop that runs without a person watching.</p>
+        </div>
+        <div class="grid grid--3">
+          <article class="card">
+            <h3>Spend has no ceiling</h3>
+            <p>A retry loop or a planning bug can repeat a paid call thousands of times. Without a cap, every repetition is a payment.</p>
+          </article>
+          <article class="card">
+            <h3>Spend is hard to see</h3>
+            <p>Small per-request payments scatter across services. Operators need one record of what was paid, to whom, and why.</p>
+          </article>
+          <article class="card">
+            <h3>Spend can be steered</h3>
+            <p>Agents read untrusted text. A page or tool result can try to change the payee, the price or the urgency of a request.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="value-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="value-title">A policy layer between the agent and the wallet</h2>
+          <p>PAY//AGENT proposes a small, deterministic component that sits in the agent's HTTP client. It decides whether a payment request may proceed, and it writes down every decision.</p>
+        </div>
+        <div class="grid grid--4">
+          <article class="card">
+            <h3>Deterministic rules</h3>
+            <p>Plain configuration, evaluated in a fixed order. The model never decides whether to pay.</p>
+          </article>
+          <article class="card">
+            <h3>Receipts and logs</h3>
+            <p>Each challenge, decision and result becomes a structured receipt you can query and export.</p>
+          </article>
+          <article class="card">
+            <h3>Human escalation</h3>
+            <p>Payments above a threshold wait for a person. Below it, routine calls stay fast.</p>
+          </article>
+          <article class="card">
+            <h3>Instant revocation</h3>
+            <p>Disable a policy, a payee or an agent key, and the next request is denied.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section band--paper" aria-labelledby="lifecycle-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="lifecycle-title">The request and payment lifecycle</h2>
+          <p>Six stages. PAY//AGENT adds the third and records all of them. The other stages follow the public x402 pattern.</p>
+        </div>
+        <ol class="flow flow--wide">
+          <li><h3>Request</h3><p>The agent calls a paid HTTP endpoint the normal way, with no payment attached.</p></li>
+          <li><h3>402 challenge</h3><p>The server answers <code>402 Payment Required</code> with what it accepts: scheme, network, asset, amount, payee and a time limit.</p></li>
+          <li><h3>Policy check</h3><p>The proposed PAY//AGENT engine compares the challenge to the agent's policy: caps, rolling budget, allowlists, quote age and replay state.</p></li>
+          <li><h3>Authorization</h3><p>Only if every rule passes does the client ask its isolated signer for a payment authorization. Above a threshold, a human approves first.</p></li>
+          <li><h3>Retry</h3><p>The client repeats the request with the payment attached in a header, as the x402 specification describes.</p></li>
+          <li><h3>Result</h3><p>The server verifies and settles through its facilitator, returns the resource, and PAY//AGENT stores the receipt.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="uses-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="uses-title">Where agents meet paid endpoints</h2>
+          <p>Use cases the concept is designed around. None of these are deployments or customers.</p>
+        </div>
+        <div class="grid grid--4">
+          <article class="card"><h3>Research agents</h3><p>Buy single search results, filings or articles instead of holding a dozen subscriptions.</p></article>
+          <article class="card"><h3>Coding agents</h3><p>Pay per call for package audits, build minutes or documentation lookups during a task.</p></article>
+          <article class="card"><h3>Data pipelines</h3><p>Enrich records one request at a time, with a budget that stops the job when it is spent.</p></article>
+          <article class="card"><h3>Model routing</h3><p>Send a prompt to a paid inference endpoint only when the price fits the task's limit.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="controls-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="controls-title">Policy controls</h2>
+          <p>Every control is a plain value in a policy file. The example values below are illustrative.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <caption>EXAMPLE policy values. The schema is proposed, not implemented as a library.</caption>
+            <thead><tr><th scope="col">Control</th><th scope="col">What it stops</th><th scope="col">Example value</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Per-request cap</th><td>One unexpectedly expensive call</td><td><code>0.10</code> per request</td></tr>
+              <tr><th scope="row">Rolling budget</th><td>Loops and slow drains</td><td><code>5.00</code> per 24 hours</td></tr>
+              <tr><th scope="row">Network allowlist</th><td>Payments on chains you do not monitor</td><td><code>eip155:84532</code></td></tr>
+              <tr><th scope="row">Asset allowlist</th><td>Unexpected or volatile assets</td><td>One stablecoin contract you name</td></tr>
+              <tr><th scope="row">Payee allowlist</th><td>Injected or swapped recipients</td><td>Named payees only</td></tr>
+              <tr><th scope="row">Quote expiry</th><td>Stale prices and delayed replays</td><td><code>60</code> seconds</td></tr>
+              <tr><th scope="row">Escalation threshold</th><td>Large payments without a person</td><td><code>1.00</code> and above</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="services-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="services-title">Service examples</h2>
+          <p>Fictional services, used across the docs and playground to show policy outcomes. Prices are made up for illustration.</p>
+        </div>
+        <div class="grid grid--3">
+          <article class="card">
+            <h3>Web search API</h3>
+            <p>One query, ranked results. A cheap, frequent call where a rolling budget matters more than a cap.</p>
+            <div class="card-meta"><span class="badge">EXAMPLE</span><span>0.002 per call</span></div>
+          </article>
+          <article class="card">
+            <h3>Image model inference</h3>
+            <p>One image description per request. Typical of calls an agent makes in bursts.</p>
+            <div class="card-meta"><span class="badge">EXAMPLE</span><span>0.04 per call</span></div>
+          </article>
+          <article class="card">
+            <h3>Dataset slice export</h3>
+            <p>A filtered extract of a large dataset. Expensive enough to trigger human approval.</p>
+            <div class="card-meta"><span class="badge">EXAMPLE</span><span>1.50 per export</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="compare-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="compare-title">Compared with subscription APIs</h2>
+          <p>Per-request payment is not always better. It fits agents that call many services occasionally.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Question</th><th scope="col">Subscription API key</th><th scope="col">x402 with PAY//AGENT policy</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Onboarding</th><td>Account, billing details and a key per provider</td><td>No account; pay on the first request</td></tr>
+              <tr><th scope="row">Cost shape</th><td>Fixed monthly fee, often unused</td><td>Pay per request; idle costs nothing</td></tr>
+              <tr><th scope="row">Spending limit</th><td>Set per provider, if offered</td><td>One policy across every provider</td></tr>
+              <tr><th scope="row">Credential leak</th><td>Key works until rotated</td><td>Bounded by caps, budget and allowlists</td></tr>
+              <tr><th scope="row">Audit trail</th><td>Separate invoices per provider</td><td>One receipt log per agent</td></tr>
+              <tr><th scope="row">Best for</th><td>Heavy, predictable use of one service</td><td>Light, varied use of many services</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta" aria-labelledby="cta-title">
+      <div class="wrap stack-lg">
+        <h2 id="cta-title">Read the proposal, then break it.</h2>
+        <p>The policy model, receipt format and error codes are drafts. Try them in the playground, read the threat model, and send corrections.</p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="./docs.html#quickstart">Quickstart</a>
+          <a class="btn" href="./whitepaper.html">Whitepaper</a>
+          <a class="btn" href="./security.html">Security model</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <p><strong>PAY//AGENT</strong></p>
+          <p>An independent concept and prototype for policy-controlled agent payments.</p>
+        </div>
+        <nav aria-label="Site">
+          <h2>Site</h2>
+          <ul>
+            <li><a href="./whitepaper.html">Whitepaper</a></li>
+            <li><a href="./docs.html">Docs</a></li>
+            <li><a href="./playground.html">Playground</a></li>
+            <li><a href="./security.html">Security</a></li>
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Legal">
+          <h2>Legal</h2>
+          <ul>
+            <li><a href="./terms.html">Terms</a></li>
+            <li><a href="./privacy.html">Privacy</a></li>
+            <li><a href="./risk.html">Risk disclosure</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="footer-legal">PAY//AGENT is not affiliated with the x402 project or Coinbase. It is not a payment network, has no token, and nothing on this site is financial advice.</p>
+    </div>
+  </footer>
+</body>
+</html>
