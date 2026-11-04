@@ -9,14 +9,34 @@
   <meta property="og:title" content="Page not found | PAY//AGENT">
   <meta property="og:image" content="https://payagent.example/assets/og-image.svg">
   <meta name="theme-color" content="#0c0c0b">
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./assets/site.css">
+  <link rel="icon" data-root-href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" data-root-href="./assets/site.css">
+  <noscript>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./assets/site.css">
+  </noscript>
+  <script>
+    (function () {
+      // A gateway can serve this document at an arbitrary missing URL.
+      var location = window.location;
+      var match = location.pathname.match(/^\/(?:ipfs|ipns)\/[^/]+(?:\/|$)/);
+      var root = match ? match[0].replace(/\/?$/, "/") : "/";
+      var base = new URL(location.protocol === "file:" ? "./" : root, location.href);
+      function resolveLinks() {
+        document.querySelectorAll("[data-root-href]").forEach(function (link) {
+          link.setAttribute("href", new URL(link.getAttribute("data-root-href"), base).href);
+        });
+      }
+      resolveLinks();
+      document.addEventListener("DOMContentLoaded", resolveLinks);
+    })();
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
+      <a class="brand" href="./index.html" data-root-href="./index.html"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#0c0c0b"/><path d="M10 25 16 7M17 25 23 7" stroke="#c8ff2e" stroke-width="3.4" stroke-linecap="square" fill="none"/></svg><span>PAY//AGENT</span></a>
     </div>
   </header>
   <main id="main" class="wrap lost">
@@ -28,9 +48,10 @@
     </figure>
     <p class="lede">This page does not exist. The link may be old, or the address was typed differently.</p>
     <div class="btn-row">
-      <a class="btn btn--primary" href="./index.html">Go to the home page</a>
-      <a class="btn" href="./docs.html">Open the docs</a>
+      <a class="btn btn--primary" href="./index.html" data-root-href="./index.html">Go to the home page</a>
+      <a class="btn" href="./docs.html" data-root-href="./docs.html">Open the docs</a>
     </div>
+    <noscript><p>For a missing nested address, JavaScript resolves the links above. With JavaScript off, return to the root of this domain or IPFS directory to continue.</p></noscript>
   </main>
 </body>
 </html>

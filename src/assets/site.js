@@ -142,6 +142,7 @@
   /**
    * @typedef {{ id: string, label: string, pass: boolean, code: string, detail: string }} CheckResult
    * @typedef {{ decision: "allow" | "deny" | "escalate", checks: CheckResult[], quote: { network: string, asset: string, payee: string, price: number, nonce: string } }} Evaluation
+   * @typedef {{ scenario: Scenario, evaluation: Evaluation }} SimulationRun
    */
 
   /**
@@ -240,7 +241,7 @@
     /** @type {Set<string>} */
     var usedNonces = new Set([SEED_NONCE]);
     var lastNonce = SEED_NONCE;
-    /** @type {Evaluation | null} */
+    /** @type {SimulationRun | null} */
     var current = null;
     var stageIndex = -1;
     var busy = false;
@@ -367,7 +368,7 @@
 
     function begin() {
       var sc = read();
-      current = evaluate(sc, usedNonces, lastNonce);
+      current = { scenario: sc, evaluation: evaluate(sc, usedNonces, lastNonce) };
       stageIndex = -1;
       logEl.textContent = "";
       checksEl.innerHTML = "";
@@ -379,8 +380,9 @@
     /** Advance one stage. Returns false when the run is finished. */
     function advance() {
       if (!current) begin();
-      var ev = /** @type {Evaluation} */ (current);
-      var sc = read();
+      var run = /** @type {SimulationRun} */ (current);
+      var ev = run.evaluation;
+      var sc = run.scenario;
       var svc = SERVICES[sc.service] || SERVICES.search;
       stageIndex++;
       var stage = STAGES[stageIndex];
@@ -492,9 +494,9 @@
 
     function setBusy(/** @type {boolean} */ b) {
       busy = b;
-      runBtn.disabled = b;
-      stepBtn.disabled = b;
-      resetBtn.disabled = b;
+      formEl.querySelectorAll("input, select, button").forEach(function (el) {
+        /** @type {HTMLInputElement | HTMLSelectElement | HTMLButtonElement} */ (el).disabled = b;
+      });
     }
 
     runBtn.addEventListener("click", async function () {

@@ -507,7 +507,10 @@ hr {
   color: var(--paper);
 }
 
-.btn:disabled {
+.btn:disabled,
+.chip:disabled,
+input:disabled,
+select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -773,6 +776,10 @@ hr {
   margin-bottom: var(--s-2);
 }
 
+.flow > li > p {
+  grid-column: 2;
+}
+
 .flow p {
   color: var(--text-dim);
   max-width: var(--measure);
@@ -798,6 +805,9 @@ hr {
   }
   .flow--wide h3 {
     margin-bottom: 0;
+  }
+  .flow--wide > li > p {
+    grid-column: 3;
   }
 }
 

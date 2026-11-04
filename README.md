@@ -33,9 +33,16 @@ DESIGN.md            design system as implemented
 artifacts/validation.md  review and verification record
 ```
 
-All URLs inside the export are relative (`./docs.html`, `./assets/site.css`), so it works at an
+Authored internal URLs are relative (`./docs.html`, `./assets/site.css`), so it works at an
 IPFS gateway subpath (`/ipfs/<cid>/`), behind an ENS name, or at a domain root. Each page is its own
 static HTML file, so no server rewrites or client routing are needed.
+
+The custom 404 resolves its assets and recovery links at runtime against `/ipfs/<cid>/`,
+`/ipns/<name>/`, or `/` for domain/subdomain hosting. This supports a gateway serving the fallback
+at a nested missing URL. Its `#main` skip link stays on the current document. Direct `file:`
+preview uses the containing folder. With JavaScript disabled, relative fallback links work for
+direct 404 previews; recovery from nested missing URLs requires returning to the content root
+manually, as the page explains.
 
 No runtime dependencies, no web fonts (robust system font stacks), no third-party requests.
 
@@ -91,18 +98,31 @@ Gateways that support `ipfs-404.html` serve the custom not-found page for missin
 
 Recorded in full in [`artifacts/validation.md`](artifacts/validation.md).
 
-During this build the shell sandbox failed to start (`Failed to create bridge sockets`) and the
-browser tool failed to launch (`Socket directory path is too long`). As a result **none of
-`npm run build`, `npm run check`, `npm run typecheck`, the design probe (`taste.mjs`) or any
-browser check were run**. `dist/` was written by hand as a byte-for-byte copy of `src/` plus
-`ipfs-404.html`; `npm run check` verifies that sync and should be the first command run by the
-next person with a working shell. Only file-level source review was performed.
+Revision checks actually run:
+
+- `npm run build`: passed; regenerated `dist/` and `dist/ipfs-404.html` from source.
+- `npm run check`: passed links, anchors, metadata, deterministic policy scenarios and source/export sync.
+- `node test/scratch/typescript/package/lib/tsc.js -p tsconfig.json`: passed with TypeScript 5.9.3,
+  the same compiler and configuration as `npm run typecheck`, downloaded directly to scratch.
+- `node test/scratch/validate-revision.mjs`: passed the production-script DOM interaction checks
+  and HTTP 404 fixture checks described in the validation record. The harness and its standalone
+  LinkeDOM 0.18.12 library are temporary verification scaffolding, removed before submission.
+- The pinned `taste.mjs` probe was attempted with an explicitly supplied Playwright module;
+  it exited 2 before measurement because Chromium exited during launch (`SIGTRAP`). The supplied
+  browser tool also could not launch. **No screenshots, visual measurements, native keyboard or
+  screen-reader checks are claimed.** Lifecycle grid placement was checked from source, and the
+  simulation was exercised in a DOM harness rather than a rendered browser.
+
+The previous round had only source review. These revision results replace its unrun build/check
+status; browser verification remains a limitation. No application dependencies were added.
 
 ## Ignore file budget
 
 `.gitignore` excludes `node_modules/`, `.npm/`, `.cache/`, `*.tgz` and `test/scratch/`. Path budget for
-committed output: `dist/` is about 150 KB and the whole submission is well under 1 MB, against an
-8 MiB limit.
+committed output: the final production export is **150,358 bytes**. A workspace-only audit checked
+all deliverable source, assets, configuration and documentation: the submission is under 350,000
+bytes, against the 8,388,608-byte limit. Supplied inputs and ignored scratch/cache directories are
+excluded. No ignore rules were changed in this revision.
 
 ## License
 

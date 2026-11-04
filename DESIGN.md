@@ -2,8 +2,9 @@
 
 Extracted from the implemented source: `src/assets/site.css` (all tokens and components),
 `src/assets/site.js` (interactive states) and the page markup in `src/*.html`. `dist/` is a copy.
-No rendered-browser confirmation was possible during this build (see `artifacts/validation.md`), so
-everything below describes declared source values, not measured renders.
+No rendered-browser confirmation was possible during the original build or this revision (see
+`artifacts/validation.md`), so everything below describes declared source values, not measured
+renders. Revision interaction checks used the production script in a DOM harness and an HTTP fixture.
 
 ## Overview
 
@@ -79,6 +80,10 @@ Terminal background is a literal `#050505` in `.term`. Status is always paired w
   (pipeline to 6 columns).
 - `.doc`: single column; from 64rem a 15rem sticky table of contents plus content.
 - `.pg`: single column; from 64rem a 24rem control panel plus results column.
+- `.flow > li`: a 3rem counter column and a flexible text column. Direct paragraphs explicitly
+  use column 2 below their headings. At 64rem, `.flow--wide > li` has counter, heading and
+  description columns; direct paragraphs explicitly use column 3. This placement was verified
+  in the final CSS, not by rendered pixel measurements.
 - Overflow: tables scroll inside `.table-wrap` (min-width 34rem); terminals scroll horizontally
   inside `pre` (focusable with `tabindex="0"`); the playground log wraps (`.term-log`).
 
@@ -102,7 +107,7 @@ Callouts and the playground outcome use a 3px left rule instead of a box. Termin
 | Skip link | `.skip-link` | First focusable element on every page | Visible on focus |
 | Status strip | `.status-strip` | Concept disclaimer above the header on every page | Static |
 | Header and nav | `.site-header`, `.site-nav`, `.nav-toggle` | Brand plus six primary links; `aria-current="page"` marks the current page | Below 52rem with JS, collapses behind a Menu button (`aria-expanded`, Escape closes and returns focus); without JS the list shows |
-| Button | `.btn`, `.btn--primary`, `.btn-row` | Primary (acid) for the one main action per area, default (outline) for the rest; adapts in `.band--paper` and `.cta` | Hover inverts; `:disabled` at 0.5 opacity; 48px min height (44px in terminal footers) |
+| Button | `.btn`, `.btn--primary`, `.btn-row` | Primary (acid) for the one main action per area, default (outline) for the rest; adapts in `.band--paper` and `.cta` | Hover inverts; `:disabled` at 0.5 opacity and not-allowed cursor (also shared by chips, inputs and selects); 48px min height (44px in terminal footers) |
 | Badge | `.badge` | SIMULATED / EXAMPLE / PROPOSED labels inside terminals, cards and fields | Static |
 | Terminal | `.term`, `.term-bar`, `.term-foot`, `.t-dim/.t-ok/.t-warn/.t-bad` | Code samples, transcripts, logs | Home replay button reveals lines; instant under reduced motion |
 | Card | `.card`, `.card-meta` | Peer items in a grid; never nested | Static |
@@ -116,6 +121,17 @@ Callouts and the playground outcome use a 3px left rule instead of a box. Termin
 | Outcome | `.outcome[data-result]` | Playground result, `role="status"` with `aria-live="polite"` | `pass`, `fail`, `hold`, empty |
 | Checks list | `.checks`, `.verdict.pass/.fail` | Per-rule results | Rendered after the policy stage |
 | CTA band | `.cta` | One closing call to action per page | Inverted buttons and focus ring |
+
+Playground runs retain one scenario snapshot alongside the evaluation for all six stages and final
+accounting. During animated Run, every scenario/policy input, select and preset button is natively
+disabled along with Run, Step and Reset; all restore on completion. Step mode remains editable,
+and an input edit discards a partial run. The existing status region explains running and outcome states.
+
+`src/404.html` uses the existing `.lost`, `.term` and button styles. Its inline resolver maps
+`data-root-href` URLs to the IPFS/IPNS content root or domain root; it also supports direct `file:`
+preview. Assets resolve in the head and recovery anchors resolve on DOMContentLoaded. The skip link
+keeps its literal `#main`; there is no `<base>` element. No-JavaScript fallbacks retain relative
+URLs and explain the nested-path limitation.
 
 ## Do's and Don'ts
 

@@ -53,7 +53,7 @@ export async function checkSite(dir) {
     if (/—/.test(html)) problems.push(`${name}: contains an em dash`);
 
     const own = ids(html);
-    for (const m of html.matchAll(/\s(?:href|src)="([^"]+)"/g)) {
+    for (const m of html.matchAll(/\s(?:href|src|data-root-href)="([^"]+)"/g)) {
       const url = m[1];
       if (/^(https?:|mailto:|data:)/.test(url)) continue;
       if (url.startsWith("/")) {
